@@ -1,0 +1,120 @@
+\documentclass[aspectratio=1610,14pt,t]{beamer}
+
+\usepackage{fontspec}
+\newfontfamily\DejaVu{DejaVu Sans}
+
+% Colors
+\usepackage{color}
+\definecolor{mainorange}{HTML}{EC811B}
+\definecolor{lightgrey}{HTML}{888888}
+\definecolor{almostwhite}{HTML}{FEFEFE}
+
+% Video support
+\usepackage{multimedia}
+
+% Syntax highlighting
+\usepackage{minted}
+\usepackage{alltt}
+\newcommand\hi[1]{{\color{mainorange} \textbf{#1}}}
+
+\usepackage{wasysym}
+
+% Custom unicode symbols
+\usepackage{newunicodechar}
+\newcommand\Warning{%
+ \makebox[1.4em][c]{%
+ \makebox[0pt][c]{\raisebox{.1em}{\small!}}%
+ \makebox[0pt][c]{\color{red}\Large$\bigtriangleup$}}}%
+
+\newunicodechar{⚠}{\Warning}
+
+% Theme
+\usetheme[%
+  subsectionpage=progressbar,
+  numbering=fraction,
+  progressbar=foot,
+]{metropolis}
+
+% Customization
+\usepackage{pagecolor}
+\setbeamertemplate{section in toc}[sections numbered]
+\setbeamerfont{title}{size=\fontsize{30}{30}}
+\setbeamerfont{block title}{size=\large}
+\newcommand\sep{\textcolor{lightgrey}{\rule{\linewidth}{0.05mm}}}
+
+% Positioning
+% https://tex.stackexchange.com/a/34929/13059
+\def\Put(#1,#2)#3{\leavevmode\makebox(0,0){\put(#1,#2){#3}}}
+
+% Meta
+\title{Rust in the Linux Kernel}
+\subtitle{My journey to a ArchLinux kernel with support for Rust modules}
+\date{2023-07-03}
+\author{Raphael Nestler (@rnestler)}
+\institute{Rust Zürichsee Meetup}
+
+\begin{document}
+
+\pgfdeclareimage[width=\paperwidth]{bg}{background-dark.pdf}
+\pagecolor{almostwhite}  % Prevent speakerdeck from optimizing away the bg color
+\usebackgroundtemplate{\pgfuseimage{bg}}
+\maketitle
+
+% ----------------------------------------------------------------- %
+
+\begin{frame}[c]{println!("\{:?\}", rnestler)}
+  Hi! I'm Raphael (@rnestler).
+
+  \pause I live in Rapperswil
+
+  \pause I work at Renuo ({\small \url{https://renuo.ch}}).
+
+  \pause I'm a founding member of Coredump\\hackerspace ({\small \url{https://coredump.ch}}).
+\end{frame}
+
+% ----------------------------------------------------------------- %
+
+\begin{frame}[plain,noframenumbering]
+  \frametitle{Outline}
+  \setcounter{tocdepth}{1}
+  \tableofcontents
+\end{frame}
+
+% ----------------------------------------------------------------- %
+
+\pgfdeclareimage[width=\paperwidth]{bg}{background-light.pdf}
+\usebackgroundtemplate{\pgfuseimage{bg}}
+
+\section{A brief history of Rust in Linux}
+
+% ----------------------------------------------------------------- %
+
+{
+\setbeamertemplate{footline}{}
+\pgfdeclareimage[width=\paperwidth]{bg}{background-inverted.pdf}
+\usebackgroundtemplate{\pgfuseimage{bg}}
+\begin{frame}[standout]
+  \begin{centering}
+    {\Huge Thank you!}\\
+    {\normalsize \url{https://coredump.ch}}\\
+    {\normalsize \url{https://renuo.ch/}}\\
+  \end{centering}
+  {\small Slides: \url{https://github.com/rust-zurichsee/meetups/}}\\
+  \vspace{3cm}
+\end{frame}
+}
+
+
+\setbeamertemplate{section in toc}[sections numbered]
+\pgfdeclareimage[width=\paperwidth]{bg}{background-light.pdf}
+\usebackgroundtemplate{\pgfuseimage{bg}}
+\appendix
+\section{\appendixname}
+\frame{\tableofcontents}
+
+\subsection{Appendix}
+
+\begin{frame}[c]{Appendix}
+\end{frame}
+
+\end{document}
