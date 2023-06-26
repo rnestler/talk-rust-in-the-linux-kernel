@@ -11,6 +11,9 @@
 *.fdb_latexmk
 *.sty
 *.pdf
+!/background-dark.pdf
+!/background-light.pdf
+!/background-inverted.pdf
 *.vrb
 _minted-slides/
 *.mintedcmd
