@@ -33,6 +33,8 @@
  * <https://www.phoronix.com/news/Rust-For-Linux-Kernel-v4> (12 February 2022)
  * <https://www.phoronix.com/news/Rust-For-Linux-v3> (17 January 2022)
  * <https://www.phoronix.com/news/Rust-For-Linux-v2> (6 December 2021)
+ * <https://www.phoronix.com/news/Rust-Independence-Linux-Kernel> (4 July 2021)
+ * <https://www.phoronix.com/news/Google-Wants-Rust-In-Kernel> (17 June 2021)
  * <https://www.phoronix.com/news/Linux-Kernel-Rust-PPC64LE> (23 March 2021)
  * <https://www.phoronix.com/news/Rust-Hits-Linux-Next> (19 March 2021) important milestone
  * <https://www.phoronix.com/news/Linux-Kernel-Rust-Path-LPC2020> (27 August 2020)

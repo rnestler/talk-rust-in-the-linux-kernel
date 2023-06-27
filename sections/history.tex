@@ -14,8 +14,46 @@
   }
 \end{frame}
 
+\begin{frame}[c,fragile]{How did it look like?}
+  Kenel Module from the slides of the LSS talk
+  \begin{minted}[fontsize=\small]{rust}
+struct HelloWorldModule;
+impl KernelModule for HelloWorldModule {
+  fn init() -> KernelResult<Self> {
+    println!("Hello world!");
+    Ok(HelloWorldModule)
+  }
+}
+kernel_module!(HelloWorldModule, license: "GPL");
+  \end{minted}
+\end{frame}
+
 \begin{frame}[c]{Plans for mainline}
+  \begin{itemize}
+    \item July 2020: Discussion on LKML for a session at LPC
+      \footnote{\url{https://lore.kernel.org/lkml/CANiq72=rFzxMyxDNkobdnMZohT_qT0KfGCincYBteyoJbtr2Gw@mail.gmail.com/}}
+    \item July/August 2020: Session about obstacles to accepting Rust
+      upstream\footnote{\url{https://lwn.net/Articles/829858/}}
+  \end{itemize}
+  \note{
+    Amongst other things they discussed: Kbuild integration, which APIs to
+    expose? Where to start using Rust (device drivers)
+  }
 \end{frame}
 
 \begin{frame}[c]{Mainlining it}
+  \begin{itemize}
+    \item March 2021: Initial Rust support lands in Linux-Next\footnote{\url{https://www.phoronix.com/news/Rust-Hits-Linux-Next}}
+    \item April 2021: Official RFC for Rust support\footnote{\url{https://lkml.org/lkml/2021/4/14/1023}}
+    \pause \item June 2021: Goolge starts funding "Rust for Linux"\footnote{\url{https://www.phoronix.com/news/Google-Wants-Rust-In-Kernel}}
+    \item July 2021 - September 2022: V2 - V10 of the patch set
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{Mainlining it}
+  \begin{itemize}
+    \item October 2022: Rust support merged for Linux 6.1\footnote{\url{https://www.phoronix.com/news/Rust-Is-Merged-Linux-6.1}}
+    \item December 2022: Linux 6.1 Released with initial Rust support!\footnote{\url{https://www.phoronix.com/news/Linux-6.1-Released}}
+    \pause \item December 2022: I start playing around with it!
+  \end{itemize}
 \end{frame}
