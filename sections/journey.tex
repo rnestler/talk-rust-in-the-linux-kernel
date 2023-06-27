@@ -2,6 +2,191 @@
 
 \subsection{The naïve start}
 
+\begin{frame}[c,fragile]{Install and try it}
+  It should be very straightforward
+  \begin{enumerate}
+    \item Verify that the ArchLinux kernel has \texttt{CONFIG\_HAVE\_RUST} set\footnote{\url{https://gitlab.archlinux.org/archlinux/packaging/packages/linux/-/blob/6.1.arch1-1/config\#L786}}
+    \item Install Linux 6.1 from the testing repository
+    \item Clone \url{https://github.com/Rust-for-Linux/rust-out-of-tree-module}
+    \item Compile and Run
+    \pause \item Profit?
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[c,fragile]{Well...}
+\begin{minted}[fontsize=\small]{text}
+rust-out-of-tree-module (git)-[main] % make
+make -C /lib/modules/`uname -r`/build M=$PWD
+make[1]: Entering directory '/usr/lib/modules/6.1.0-arch1-1/build'
+  RUSTC [M] ~/projects/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.o
+error: target file "./rust/target.json" does not exist
+
+make[2]: *** [scripts/Makefile.build:307: ~/projects/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.o] Error 1
+make[1]: *** [Makefile:1992: ~/projects/github/Rust-for-Linux/rust-out-of-tree-module] Error 2
+make[1]: Leaving directory '/usr/lib/modules/6.1.0-arch1-1/build'
+make: *** [Makefile:6: default] Error 2
+\end{minted}
+\end{frame}
+
+\begin{frame}[c,fragile]{RTF README}
+\begin{quote}
+The kernel tree (KDIR) requires the Rust metadata to be available. These are
+generated during the kernel build, but may not be available for
+installed/distributed kernels (the scripts that install/distribute kernel
+headers etc. for the different package systems and Linux distributions are not
+updated to take into account Rust support yet).
+\end{quote}
+README from \url{https://github.com/Rust-for-Linux/rust-out-of-tree-module}
+\end{frame}
+
+\begin{frame}[c,fragile]{Trying it in Kernel}
+\begin{enumerate}
+\item Clone https://github.com/Rust-for-Linux/linux
+\item RTFM\footnote{\url{https://www.kernel.org/doc/html/latest/rust/quick-start.html}}
+\item Check
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[c,fragile]{Well...}
+\begin{minted}[fontsize=\footnotesize]{text}
+Rust-for-Linux/linux (git)-[rust] % make LLVM=1 rustavailable
+***
+*** Rust compiler 'rustc' is too new. This may or may not work.
+***   Your version:     1.66.0
+***   Expected version: 1.62.0
+***
+***
+*** Rust bindings generator 'bindgen' is too new. This may or may not work.
+***   Your version:     0.63.0
+***   Expected version: 0.56.0
+***
+Rust is available!
+\end{minted}
+\end{frame}
+
+\begin{frame}[c,fragile]{We can fix that!}
+\begin{minted}[fontsize=\footnotesize]{text}
+rustup override set $(scripts/min-tool-version.sh rustc)
+rustup component add rust-src
+cargo install --locked --version $(scripts/min-tool-version.sh bindgen) bindgen
+\end{minted}
+\end{frame}
+
+\begin{frame}[c,fragile]{Trying it in Kernel}
+\begin{enumerate}
+\item Switch some stuff in \texttt{make menuconfig}\footnote{In hindsight this was an important hint}
+\item Compile the kernel \texttt{make LLVM=1} \rightarrow{} works
+\item Switch to the kernel sources matching my running kernel and compile again \rightarrow{} works
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[c,fragile]{Now it just \emph{has} to work, right?}
+\pause
+\begin{minted}[fontsize=\footnotesize]{text}
+Rust-for-Linux/rust-out-of-tree-module (git)-[main] % make KDIR=../linux LLVM=1
+...
+error: proc macro panicked
+  --> ~/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.rs:7:1
+   |
+7  | / module! {
+8  | |     type: RustOutOfTree,
+9  | |     name: "rust_out_of_tree",
+10 | |     author: "Rust for Linux Contributors",
+11 | |     description: "Rust out-of-tree sample",
+12 | |     license: "GPL",
+13 | | }
+   | |_^
+   |
+   = help: message: Expected byte string
+\end{minted}
+\end{frame}
+
+\begin{frame}[c,fragile]{We can fix that!}
+Just change every string to \texttt{b"string"} and fix the other compile errors
+\footnote{\url{https://github.com/Rust-for-Linux/rust-out-of-tree-module/pull/3}}
+\pause
+\begin{minted}[fontsize=\footnotesize]{text}
+Rust-for-Linux/rust-out-of-tree-module (git)-[main] % make KDIR=../linux LLVM=1
+make -C ../linux M=$PWD
+make[1]: Entering directory '~/projects/github/Rust-for-Linux/linux'
+  RUSTC [M] ~/projects/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.o
+  MODPOST ~/projects/github/Rust-for-Linux/rust-out-of-tree-module/Module.symvers
+  LD [M]  ~/projects/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.ko
+make[1]: Leaving directory '~/projects/github/Rust-for-Linux/linux'
+\end{minted}
+\note{
+This actually downgrades the git module to the old interface. For Linux 6.2 we
+reverted this fix again.
+}
+\end{frame}
+
+\begin{frame}[c]{It compiles!}
+  \centering
+  \includegraphics[height=0.8\textheight]{img/compiling-linux-kernel-module-in-rust.jpg}
+\end{frame}
+
+\begin{frame}[c,fragile]{Now load it!}
+\begin{minted}[fontsize=\footnotesize,breaklines]{text}
+$ sudo insmod rust_out_of_tree.ko
+insmod: ERROR: could not insert module rust_out_of_tree.ko: Invalid module format
+$ dmesg | grep rust_out_of_tree
+[24593.691184] rust_out_of_tree: version magic '6.1.0-arch1 SMP preempt mod_unload ' should be '6.1.0-arch1-1 SMP preempt mod_unload '
+\end{minted}
+\pause Alright I made a tiny mistake in defining the kernel version...
+\end{frame}
+
+\begin{frame}[c,fragile]{Now load it!}
+\begin{minted}[fontsize=\footnotesize,breaklines]{text}
+$ sudo insmod rust_out_of_tree.ko
+insmod: ERROR: could not insert module rust_out_of_tree.ko: Unknown symbol in module
+\end{minted}
+\begin{minted}[fontsize=\footnotesize]{text}
+$ dmesg | grep rust_out_of_treej
+[25300.463334] rust_out_of_tree: Unknown symbol _RNvNtNtCsfATHBUcknU9_6kernel5print14format_strings4INFO (err -2)
+[25300.463353] rust_out_of_tree: Unknown symbol _RNvNtCsfATHBUcknU9_6kernel5print11call_printk (err -2)
+[25300.463371] rust_out_of_tree: Unknown symbol __rust_dealloc (err -2)
+[25300.463386] rust_out_of_tree: Unknown symbol __rust_realloc (err -2)
+[25300.463400] rust_out_of_tree: Unknown symbol __rust_alloc (err -2)
+...
+\end{minted}
+\pause Hmm...
+\end{frame}
+
+\begin{frame}[c,fragile]{Investigating}
+Try to use the ArchLinux config file directly and recompile
+\begin{minted}[fontsize=\footnotesize]{text}
+% make KDIR=../linux LLVM=1
+make -C ../linux M=$PWD
+make[1]: Entering directory '~/projects/github/Rust-for-Linux/linux'
+  MODPOST .../Module.symvers
+ERROR: modpost: "_RNvNtNtCsfATHBUcknU9_6kernel5print14format_strings4INFO" [.../rust_out_of_tree.ko] undefined!
+ERROR: modpost: "_RNvNtCsfATHBUcknU9_6kernel5print11call_printk" [.../rust_out_of_tree.ko] undefined!
+ERROR: modpost: "__rust_dealloc" [.../rust_out_of_tree.ko] undefined!
+ERROR: modpost: "__rust_realloc" [.../rust_out_of_tree.ko] undefined!
+ERROR: modpost: "__rust_alloc" [.../rust_out_of_tree.ko] undefined!
+\end{minted}
+\pause This looks oddly familiar!
+\end{frame}
+
+\begin{frame}[c,fragile]{The end}
+\small The ArchLinux kernel doesn't have Rust support. make menuconfig
+reveals, that options which conflict with CONFIG\_HAVE\_RUST=y are enabled:
+\includegraphics[height=0.75\textheight]{img/make-menuconfig.png}
+\end{frame}
+
+
+\begin{frame}[c,fragile]{What did we learn?}
+\begin{itemize}
+\item Rust support needs to compile the kernel with clang/LLVM
+\item The kernel only attempts to load modules which have the same version magic
+\item It needs a specific \emph{stable} Rust version {\footnotesize(since it uses the
+\texttt{RUSTC\_BOOTSTRAP=1} trick to enable unstable features on stable compilers)}
+\item The module interface is (of course) still in flux
+\item The kernel has automatic configuration variables which detect if stuff can be enabled \texttt{CONFIG\_RUST\_IS\_AVAILABLE}
+\item Actual Rust support depends on a combination of multiple variables
+\end{itemize}
+\end{frame}
+
 \subsection{Compiling our own kernel}
 
 \subsection{Packing the correct metadata}
