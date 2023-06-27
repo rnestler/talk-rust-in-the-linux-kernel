@@ -39,3 +39,5 @@
  * <https://www.phoronix.com/news/Torvalds-Rust-Kernel-K-Build> (11 July 2020)
  * <https://www.phoronix.com/news/Linux-Plumbers-2020-Rust> (9 July 2020)
    * <https://lore.kernel.org/lkml/CAKwvOdmuYc8rW_H4aQG4DsJzho=F+djd68fp7mzmBp3-wY--Uw@mail.gmail.com/T/#u>A
+ * <https://www.reddit.com/r/rust/comments/crjeax/writing_linux_kernel_module_in_rust/> (17 August 2019)
+ * <https://github.com/fishinabarrel/linux-kernel-module-rust>
