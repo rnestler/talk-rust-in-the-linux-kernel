@@ -336,4 +336,68 @@ error[E0461]: couldn't find crate `core` with expected target triple target-1280
 
 \subsection{June 2023 — Packing the correct metadata}
 
+\begin{frame}[c]{Motivation}
+  \begin{itemize}
+    \item I did update my kernel a few times to keep it up to date and checked
+      if anything changed with Linux 6.2\footnote{Here I needed to change back
+      the changes we made to the out-of-tree module
+      \url{https://github.com/Rust-for-Linux/rust-out-of-tree-module/pull/5}}
+    \item I did propose to do this talk
+    \item I had some nice interactions with Miguel Ojeda from the
+      Rust-for-Linux project!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{What I learned growing up with C++/Rust}
+  \begin{quote}
+    \centering
+    Never blame the compiler for an issue you have!
+  \end{quote}
+  \pause \centering \includegraphics[width=0.75\textwidth]{img/one-does-not-simply-blame-the-compiler.jpg}
+\end{frame}
+
+\begin{frame}[c]{It was the compiler...}
+  \begin{itemize}
+    \item For custom \texttt{target.json} the Rust compiler uses a hash to
+      assert that the target it the same (the strange number)
+    \item The Rust compiler decided (probably as a quick hack?) to use the \emph{path} instead of the \emph{content} of the \texttt{target.json} to calculate this hash! This was fixed in Rustr 1.63.0\footnote{\url{https://github.com/rust-lang/rust/pull/98225/}}
+      \pause\item But we need to use 1.62.0\pause, right?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c,fragile]{Compiling with 1.63.0}
+  Wrong! We only get some minor warnings in the output:
+\begin{minted}[fontsize=\small]{text}
+*** Rust compiler 'rustc' is too new. This may or may not work.
+***   Your version:     1.63.0
+***   Expected version: 1.62.0
+warning: the feature `nll` has been stable since 1.63.0 and no longer requires an attribute to enable
+   --> rust/alloc/lib.rs:170:12
+    |
+170 | #![feature(nll)] // Not necessary, but here to test the `nll` feature.
+    |            ^^^
+    |
+    = note: `#[warn(stable_features)]` on by default
+\end{minted}
+  \note{Remember: The Linux kernel uses unstable features on a stable release!}
+\end{frame}
+
+\begin{frame}[c,fragile]{Getting the necessary build metadata}
+  \begin{itemize}
+    \item \texttt{rust/target.json} the custom target description
+    \item \texttt{rust/*.rmeta} the compiled rust libraries
+    \item \texttt{rust/*.so} the pre-compiled procedural macros
+    \item \texttt{rust-toolchain} such that we use the same Rust compiler
+      version that was used to compile the kernel
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{What did we learn? (part 3)}
+  \begin{itemize}
+    \item Sometimes it \emph{is} the compiler
+    \item Just upgrading one version of the Rust compiler was safe (A
+      stabilized feature should probably not change from the last release)
+  \end{itemize}
+\end{frame}
+
 \subsection{There and Back Again}
