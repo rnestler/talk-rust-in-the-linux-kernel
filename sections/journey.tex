@@ -176,13 +176,14 @@ reveals, that options which conflict with CONFIG\_HAVE\_RUST=y are enabled:
 
 
 \begin{frame}[c,fragile]{What did we learn?}
+  \small
 \begin{itemize}
 \item Rust support needs to compile the kernel with clang/LLVM
 \item The kernel only attempts to load modules which have the same version magic
 \item It needs a specific \emph{stable} Rust version {\footnotesize(since it uses the
 \texttt{RUSTC\_BOOTSTRAP=1} trick to enable unstable features on stable compilers)}
 \item The module interface is (of course) still in flux
-\item The kernel has automatic configuration variables which detect if stuff can be enabled \texttt{CONFIG\_RUST\_IS\_AVAILABLE}
+\item The kernel has automatic configuration variables which detect if stuff can be enabled (\texttt{CONFIG\_RUST\_IS\_AVAILABLE})
 \item Actual Rust support depends on a combination of multiple variables
 \end{itemize}
 \end{frame}
