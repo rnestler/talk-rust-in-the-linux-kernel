@@ -1,0 +1,28 @@
+\section{Quickstart}
+
+\begin{frame}[c,fragile]{Install the kernel}
+  \begin{minted}[fontsize=\small]{bash}
+  # Edit /etc/makepkg.conf and make sure it uses
+  # all your cores by adding the following:
+  MAKEFLAGS="-j8"
+  $ git clone https://aur.archlinux.org/linux-rust.git
+  $ cd linux-rust
+  $ makepkg # this takes some minutes
+  $ sudo pacman -U linux-rust-headers-6.3.9.*pkg.tar.zst
+  $ sudo pacman -U linux-rust-6.3.9*.pkg.tar.zst
+  # Reboot into the new kernel. You may need to configure
+  # your bootloader for that.
+  \end{minted}
+\end{frame}
+
+\begin{frame}[c,fragile]{Compile and load the out-of-tree module}
+  \begin{minted}[fontsize=\footnotesize,breaklines]{bash}
+  $ git clone git@github.com:Rust-for-Linux/rust-out-of-tree-module.git
+  $ cd rust-out-of-tree-module
+  $ make LLVM=1
+  # Or if you don't run the Rust kernel yet
+  $ make KDIR=/lib/modules/6.3.9-arch1-1-rust/build LLVM=1
+  $ dmesg --follow # in a seperate terminal
+  $ sudo insmod rust_out_of_tree.ko
+  \end{minted}
+\end{frame}
