@@ -190,6 +190,150 @@ reveals, that options which conflict with CONFIG\_HAVE\_RUST=y are enabled:
 
 \subsection{Compiling our own kernel}
 
+\begin{frame}[c,fragile]{Building our own kernel}
+  \begin{itemize}
+    \item The ArchLinux kernel doesn't support Rust modules
+    \item I want to have a bootable / useable kernel \rightarrow{} take the
+      ArchLinux kernel as base and only do minimal changes
+    \item Alternative: Just use the Rust-for-Linux kernel
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c,fragile]{Building our own kernel}
+  \begin{itemize}
+    \item Create https://aur.archlinux.org/packages/linux-rust
+    \item Take the ArchLinux kernel package
+    \item Run \texttt{make menuconfig}
+    \item Enhance the build process with Rust specific stuff
+    \item Build kernel, reboot, profit\footnote{Of course this needed some iterations in the build process}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c,fragile]{First sucesses!}
+  \begin{minted}[fontsize=\small,breaklines]{bash}
+$ make KDIR=~/projects/archpkg/linux-rust/src/archlinux-linux LLVM=1
+$ sudo insmod rust_out_of_tree.ko
+# dmesg output
+[  451.297415] rust_out_of_tree: loading out-of-tree module taints kernel.
+[  451.297460] rust_out_of_tree: module verification failed: signature and/or required key missing - tainting kernel
+[  451.297724] rust_out_of_tree: Rust out-of-tree sample (init)
+
+  \end{minted}
+\end{frame}
+
+\begin{frame}{First sucesses!}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/victory-compiled-and-loaded-kernel-module.jpg}
+\end{frame}
+
+\begin{frame}[c,fragile]{A small issue...}
+  \begin{itemize}
+    \item Did you notice our workaround?
+      \pause
+    \item Right: \texttt{KDIR=\textasciitilde/projects/archpkg/linux-rust/src/archlinux-linux}
+    \item This meens we need the sources of our kernel build around. Not nice
+      if we want to enable people to install it via package manager
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{Remember build metadata?}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \includegraphics[width=\textwidth]{img/tux-trying-to-remember-what-he-read-in-the-readme.png}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item Remember the quote about build metadata in the readme?
+        \item Let's try to package this correctly!\footnote{The build metadata goes in the linux-rust-headers package. The name is slightly missleading, because it contains various other build artifacts}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[c]{Just follow the errors}
+My strategy:
+  \begin{itemize}
+    \item Try to build the out-of-tree module
+    \item Check the errors
+    \item Add files to the metadata which should fix the issue
+    \item \texttt{makepkg --repackage -f} is our friend
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c,fragile]{First error: target.json}
+  \begin{minted}[fontsize=\small]{text}
+rust-out-of-tree-module (git)-[main] % make LLVM=1
+make -C /lib/modules/`uname -r`/build M=$PWD
+make[1]: Entering directory '/usr/lib/modules/6.1.5-arch2-1-rust/build'
+  RUSTC [M] ~/projects/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.o
+error: target file "./rust/target.json" does not exist
+  \end{minted}
+
+  \rightarrow{} Let's add \texttt{install -Dt "\$builddir/rust" -m644 scripts/target.json}
+\end{frame}
+
+\begin{frame}[c,fragile]{Next error: core library}
+  \begin{minted}[fontsize=\small]{text}
+make -C /lib/modules/`uname -r`/build M=$PWD
+make[1]: Entering directory '/usr/lib/modules/6.1.5-arch2-1-rust/build'
+  RUSTC [M] ~/projects/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.o
+error[E0463]: can't find crate for `core`
+  |
+  = note: the `target` target may not be installed
+  = help: consider downloading the target with `rustup target add target`
+  = help: consider building the standard library from source with `cargo build -Zbuild-std`
+
+  \end{minted}
+
+  \rightarrow{} Let's just add everything from \texttt{rust/}!\footnote{This decision happened after several iterations...}
+\end{frame}
+
+\begin{frame}[c,fragile]{Next error: Rust version}
+  \begin{minted}[fontsize=\small,breaklines]{text}
+error[E0514]: found crate `core` compiled by an incompatible version of rustc
+  = note: the following crate versions were found:
+          crate `core` compiled by rustc 1.62.0 (a8314ef7d 2022-06-27): /usr/lib/modules/6.1.5-arch2-1-rust/build/rust/libcore.rmeta
+  = help: please recompile that crate using this compiler (rustc 1.66.0 (69f9c33d7 2022-12-12)) (consider running `cargo clean` first)
+  \end{minted}
+  \rightarrow{} We need to put \texttt{rust-toolchain} file into \texttt{/usr/lib/modules/...}, not the out-of-tree module folder!
+\end{frame}
+
+\begin{frame}[c,fragile]{Target tripple what?}
+  \begin{minted}[fontsize=\small,breaklines]{text}
+make -C /lib/modules/`uname -r`/build M=$PWD
+make[1]: Entering directory '/usr/lib/modules/6.1.5-arch2-1-rust/build'
+  RUSTC [M] /home/roughl/projects/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.o
+error[E0461]: couldn't find crate `core` with expected target triple target-12809083303779448358
+  |
+  = note: the following crate versions were found:
+          crate `core`, target triple target-3911737072772191946: /usr/lib/modules/6.1.5-arch2-1-rust/build/rust/libcore.rmeta
+  \end{minted}
+\end{frame}
+
+\begin{frame}[c,fragile]{Target tripple what?}
+  \begin{itemize}
+    \item WAT?
+    \item Target tripples define for what you want to compile
+      (\texttt{x86\_64-unknown-linux-gnu} for example)
+    \item What was that strange number? Don't we have a custom
+      \texttt{target.json} anyway?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{What did we learn? (part 2)}
+  \small
+  \begin{itemize}
+    \item Building our own workable kernel was surprisingly easy!
+    \item Packaging the correct build metadata not
+    \item \texttt{target.json} is used to describe the kernel environement to
+      the Rust compiler
+    \item The kernel uses it's own Rust library (mostly std libcore, but with
+      custom liballoc for example)
+    \item out-of-tree module builds get executed in the context of the build
+      metadata and are passed the directory of the module.
+  \end{itemize}
+\end{frame}
+
 \subsection{Packing the correct metadata}
 
 \subsection{There and Back Again}
