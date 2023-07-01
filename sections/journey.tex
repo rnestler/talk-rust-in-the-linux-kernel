@@ -43,7 +43,7 @@ README from \url{https://github.com/Rust-for-Linux/rust-out-of-tree-module}
 \begin{enumerate}
 \item Clone https://github.com/Rust-for-Linux/linux
 \item RTFM\footnote{\url{https://www.kernel.org/doc/html/latest/rust/quick-start.html}}
-\item Check
+\item Verify that we can build that kernel and build the out-of-tree module against that.
 \end{enumerate}
 \end{frame}
 
@@ -83,7 +83,7 @@ cargo install --locked --version $(scripts/min-tool-version.sh bindgen) bindgen
 \begin{frame}[c,fragile]{Now it just \emph{has} to work, right?}
 \pause
 \begin{minted}[fontsize=\footnotesize]{text}
-Rust-for-Linux/rust-out-of-tree-module (git)-[main] % make KDIR=../linux LLVM=1
+rust-out-of-tree-module (git)-[main] % make KDIR=../linux LLVM=1
 ...
 error: proc macro panicked
   --> ~/github/Rust-for-Linux/rust-out-of-tree-module/rust_out_of_tree.rs:7:1
@@ -141,7 +141,7 @@ $ sudo insmod rust_out_of_tree.ko
 insmod: ERROR: could not insert module rust_out_of_tree.ko: Unknown symbol in module
 \end{minted}
 \begin{minted}[fontsize=\footnotesize]{text}
-$ dmesg | grep rust_out_of_treej
+$ dmesg | grep rust_out_of_tree
 [25300.463334] rust_out_of_tree: Unknown symbol _RNvNtNtCsfATHBUcknU9_6kernel5print14format_strings4INFO (err -2)
 [25300.463353] rust_out_of_tree: Unknown symbol _RNvNtCsfATHBUcknU9_6kernel5print11call_printk (err -2)
 [25300.463371] rust_out_of_tree: Unknown symbol __rust_dealloc (err -2)
