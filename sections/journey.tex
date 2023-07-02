@@ -382,7 +382,7 @@ warning: the feature `nll` has been stable since 1.63.0 and no longer requires a
   \note{Remember: The Linux kernel uses unstable features on a stable release!}
 \end{frame}
 
-\begin{frame}[c,fragile]{Getting the necessary build metadata}
+\begin{frame}[c]{Getting the necessary build metadata}
   \begin{itemize}
     \item \texttt{rust/target.json} the custom target description
     \item \texttt{rust/*.rmeta} the compiled rust libraries
@@ -400,4 +400,58 @@ warning: the feature `nll` has been stable since 1.63.0 and no longer requires a
   \end{itemize}
 \end{frame}
 
-\subsection{There and Back Again}
+\subsection{June 2023 — There and Back Again}
+
+\begin{frame}[c]{Updating to 6.3}
+  \begin{itemize}
+    \item We did it
+    \item We can compile out-of-tree modules!
+    \item Now we can just update and play around with new features that land for Rust modules!
+    \pause\item Right?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c,fragile]{Updating to 6.3}
+  Wrong!
+\begin{minted}[fontsize=\small,breaklines]{text}
+rust-out-of-tree-module (git)-[main] % make LLVM=1
+make -C /lib/modules/6.3.8-arch1-1-rust/build M=$PWD
+ RUSTC [M] rust-out-of-tree-module/rust_out_of_tree.o
+error: could not write output to rust_out_of_tree.rust_out_of_tree.ad9c6f77-cgu.0.rcgu.o: Permission denied
+
+error: aborting due to previous error
+\end{minted}
+\end{frame}
+
+\begin{frame}[c]{Updating to 6.3}
+  Asking on the Rust-for-Linux
+  chat\footnote{\url{https://rust-for-linux.zulipchat.com/\#narrow/stream/291565-Help/topic/Out.20of.20tree.20module.20for.20mainline.20kernel}}
+
+  \texttt{rustc} writes temporary files to the current directory\footnote{Which is in \texttt{/lib/modules/...} for the module build}, even if we specify
+  with \texttt{--emit} where we want our output file.
+
+  We need to pass \texttt{--out-dir}
+\end{frame}
+
+\begin{frame}[c,fragile]{Updating to 6.3}
+\begin{minted}[fontsize=\small,breaklines]{diff}
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 94d67252df4e..261e51c0af59 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -287,7 +287,7 @@ rust_common_cmd = \
+        --extern alloc --extern kernel \
+        --crate-type rlib -L $(objtree)/rust/ \
+        --crate-name $(basename $(notdir $@)) \
+-       --emit=dep-info=$(depfile)
++       --out-dir $(dir $@) --emit=dep-info=$(depfile)
+\end{minted}
+\end{frame}
+
+\begin{frame}[c]{What did we learn? (part 4)}
+  \begin{itemize}
+    \item Nobody except me cares for out-of-tree Rust kernel modules so far {\Emoji😉}
+    \item The Rust-for-Linux community is very helpful!
+      {\Emoji🎉}
+  \end{itemize}
+\end{frame}
