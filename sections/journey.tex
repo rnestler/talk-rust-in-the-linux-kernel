@@ -67,7 +67,7 @@ Rust is available!
 \end{frame}
 
 \begin{frame}[c,fragile]{We can fix that!}
-\begin{minted}[fontsize=\footnotesize]{text}
+\begin{minted}[fontsize=\footnotesize,breaklines]{text}
 rustup override set $(scripts/min-tool-version.sh rustc)
 rustup component add rust-src
 cargo install --locked --version $(scripts/min-tool-version.sh bindgen) bindgen
