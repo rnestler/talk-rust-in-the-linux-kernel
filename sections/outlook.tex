@@ -1,7 +1,32 @@
 \section{Some Outlook}
 
+\begin{frame}[c]{Linux 6.4}
+  \begin{itemize}
+    \item Got released recently \rightarrow{} I will update the package
+    \item Mainlines a few more things like the `pin-init` API\footnote{\url{https://lore.kernel.org/lkml/20230429012119.421536-1-ojeda@kernel.org}}
+    \item Maybe I'll actually \emph{start} with playing around with kernel modules in Rust {\Emoji😉}
+  \end{itemize}
+\end{frame}
+
 \begin{frame}[c]{Linux 6.5}
-% * Linux 6.5 will get a newer Rust version and will start updating it regularly
+  \begin{itemize}
+    \item Will upgrade rustc to 1.68.2\footnote{\url{https://lore.kernel.org/lkml/20230618161558.1051269-1-ojeda@kernel.org}}
+    \item Also the start of a new rustc version policy
+  \end{itemize}
+
+  \begin{quote}
+    This is the first such upgrade, and we will try to update it often from
+    now on, in order to remain close to the latest release, until a minimum
+    version (which is "in the future") can be established.
+  \end{quote}
+\end{frame}
+
+\begin{frame}[c]{Interesting Stuff happening}
+  \begin{itemize}
+    \item Apple M1 GPU driver\footnote{\url{https://asahilinux.org/2022/11/tales-of-the-m1-gpu/}}
+    \item Rust null block driver (for experimenting with the block device API)\footnote{\url{https://lore.kernel.org/linux-block/20230503090708.2524310-1-nmi@metaspace.dk/}}
+    \item Rust abstractions for network device drivers\footnote{\url{https://lore.kernel.org/rust-for-linux/01010188843258ec-552cca54-4849-4424-b671-7a5bf9b8651a-000000@us-west-2.amazonses.com/}}
+  \end{itemize}
 \end{frame}
 
 % * There is quite some stuff done using Rust in the Linux kernel very notably Apple M1/M2 GPU support by Asahi Linux
