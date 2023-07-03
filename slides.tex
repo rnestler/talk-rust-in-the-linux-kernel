@@ -131,11 +131,25 @@
 \section{\appendixname}
 \frame{\tableofcontents}
 
-\subsection{Appendix}
+\subsection{target.json}
 
 % Ideas: target.json, linux rust core,alloc library
 
-\begin{frame}[c]{Appendix}
+\begin{frame}[c,fragile]{\texttt{target.json}}
+  \begin{minted}[fontsize=\small,breaklines]{json}
+{
+    "arch": "x86_64",
+    "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128",
+    "features": "-3dnow,-3dnowa,-mmx,+soft-float,+retpoline-external-thunk",
+    "llvm-target": "x86_64-linux-gnu",
+    "target-pointer-width": "64",
+    "emit-debug-gdb-scripts": false,
+    "frame-pointer": "may-omit",
+    "stack-probes": {"kind": "none"}
+}
+  \end{minted}
+  \note[item]{Data layout: Some magic numbers how data is structured}
+  \note[item]{No floating point hardware! The kernel isn't allowed to mess up the FPU state}
 \end{frame}
 
 \end{document}
