@@ -37,6 +37,8 @@ headers etc. for the different package systems and Linux distributions are not
 updated to take into account Rust support yet).
 \end{quote}
 README from \url{https://github.com/Rust-for-Linux/rust-out-of-tree-module}
+  \note[item] {Ahh they just didn't pack the metadata}
+  \note[item] {Let's just figure this out and make a bug-report later}
 \end{frame}
 
 \begin{frame}[c,fragile]{Trying it in Kernel}
@@ -78,6 +80,8 @@ cargo install --locked --version $(scripts/min-tool-version.sh bindgen) bindgen
 \item Compile the kernel \texttt{make LLVM=1} \rightarrow{} works
 \item Switch to the kernel sources matching my running kernel and compile again \rightarrow{} works
 \end{enumerate}
+  \note[item] {I'm not sure what I was thinking exactly, as I was still just playing around with the Rust support}
+  \note[item] {But that I needed to enable Rust support in menuconfig should have been a hint. But I still though that it \emph{was} enabled for the ArchLinux kernel.}
 \end{frame}
 
 \begin{frame}[c,fragile]{Now it just \emph{has} to work, right?}
@@ -99,6 +103,7 @@ error: proc macro panicked
    |
    = help: message: Expected byte string
 \end{minted}
+  \note[item]{This still looks similar to the module definition from 2019}
 \end{frame}
 
 \begin{frame}[c,fragile]{We can fix that!}
@@ -115,8 +120,8 @@ make[1]: Entering directory '~/projects/github/Rust-for-Linux/linux'
 make[1]: Leaving directory '~/projects/github/Rust-for-Linux/linux'
 \end{minted}
 \note{
-This actually downgrades the git module to the old interface. For Linux 6.2 we
-reverted this fix again.
+This actually downgrades the kernel module to the old interface which landed in
+6.1. For Linux 6.2 we reverted this fix again.
 }
 \end{frame}
 
@@ -150,6 +155,7 @@ $ dmesg | grep rust_out_of_tree
 ...
 \end{minted}
 \pause Hmm...
+  \note[item]{Apparently we can't find some of the Rust symbols...}
 \end{frame}
 
 \begin{frame}[c,fragile]{Investigating}
@@ -166,12 +172,17 @@ ERROR: modpost: "__rust_realloc" [.../rust_out_of_tree.ko] undefined!
 ERROR: modpost: "__rust_alloc" [.../rust_out_of_tree.ko] undefined!
 \end{minted}
 \pause This looks oddly familiar!
+  \note[item]{These are the compile time link errors corresponding to the dynamic link errors we got previously}
+  \note[item]{Maybe the ArchLinux kernel doesn't have Rust support?}
 \end{frame}
 
 \begin{frame}[c,fragile]{The end}
 \small The ArchLinux kernel doesn't have Rust support. make menuconfig
 reveals, that options which conflict with CONFIG\_HAVE\_RUST=y are enabled:
 \includegraphics[height=0.75\textheight]{img/make-menuconfig.png}
+  \note[item]{The Linux kernel has automatic config variables}
+  \note[item]{The Rust support just gets disabled if we have conflicting options}
+  \note[item]{\texttt{HAVE_RUST} is just to \emph{disable} Rust support if everything else would be here}
 \end{frame}
 
 
